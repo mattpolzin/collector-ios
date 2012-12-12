@@ -20,6 +20,8 @@
 
 #import <UIKit/UIKit.h>
 
+#define LYTICS_CFUUID_DEFAULTS_KEY @"LYTICS_CFUUID"
+
 /// Utilities for encoding and decoding URL arguments.
 /// This code is from the project google-toolbox-for-mac
 @interface NSString (GTMNSStringURLArgumentsAdditions)
@@ -75,6 +77,8 @@ static Lytics *s_sharedLytics = nil;
 
 @interface Lytics (PrivateMethods)
 
+- (void)initLytics;
+
 - (void)onTimer:(NSTimer *)timer;
 
 - (void)didEnterBackgroundCallBack:(NSNotification *)notification;
@@ -85,9 +89,56 @@ static Lytics *s_sharedLytics = nil;
 - (void)resume;
 - (void)exit;
 
+- (void)createAndSetCFUUIDString;
+
 @end
 
 @implementation Lytics (PrivateMethods)
+
+- (void)initLytics
+{
+	timer = nil;
+	isSuspended = NO;
+	unsentSessionLength = 0;
+	eventQueue = [[EventQueue alloc] init];
+	
+	// register the DeviceInfo class to provide device info for analytics events
+	[DeviceInfo registerGlobalAccessors];
+	
+	// register this class to provide the session time
+	[LyticsSettings setAccessorForGlobalKey:@"SESSION_TIME_KEY" target:self selector:@selector(sessionTime)];
+	
+	// register this class for notifications about the app gaining/losing focus
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(didEnterBackgroundCallBack:)
+												 name:UIApplicationDidEnterBackgroundNotification
+											   object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(willEnterForegroundCallBack:)
+												 name:UIApplicationWillEnterForegroundNotification
+											   object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(willTerminateCallBack:)
+												 name:UIApplicationWillTerminateNotification
+											   object:nil];
+	
+	// determine if a uuid should be loaded or created
+	if ([[LyticsSettings generalSetting:@"generate_or_load_CFUUID"] boolValue]) {
+		NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+		self.uuid = [defaults stringForKey:LYTICS_CFUUID_DEFAULTS_KEY];
+		if (!self.uuid) {
+			// the CFUUID needs to be created and stored
+			[self createAndSetCFUUIDString];
+			if (self.uuid != nil) {
+				[defaults setObject:self.uuid forKey:LYTICS_CFUUID_DEFAULTS_KEY];
+				[defaults synchronize];
+			}
+		}
+	}
+	
+	// register this class to provide the uuid for events
+	[LyticsSettings setAccessorForGlobalKey:@"CFUUID_KEY" target:self selector:@selector(uuid)];
+}
 
 - (void)onTimer:(NSTimer *)timer
 {
@@ -158,9 +209,22 @@ static Lytics *s_sharedLytics = nil;
 {
 }
 
+- (void)createAndSetCFUUIDString
+{
+	CFUUIDRef cfuuid = CFUUIDCreate(NULL);
+	
+	CFStringRef cfuuidString = CFUUIDCreateString(NULL, cfuuid);
+	CFRelease(cfuuid);
+	
+	self.uuid = (NSString*)cfuuidString;
+	CFRelease(cfuuidString);
+}
+
 @end
 
 @implementation Lytics
+
+@synthesize uuid;
 
 + (Lytics *)sharedInstance
 {
@@ -174,27 +238,7 @@ static Lytics *s_sharedLytics = nil;
 {
 	if (self = [super init])
 	{
-		timer = nil;
-		isSuspended = NO;
-		unsentSessionLength = 0;
-        eventQueue = [[EventQueue alloc] init];
-		
-		[DeviceInfo registerGlobalAccessors];
-		
-		[LyticsSettings setAccessorForGlobalKey:@"SESSION_TIME_KEY" target:self selector:@selector(sessionTime)];
-		
-		[[NSNotificationCenter defaultCenter] addObserver:self 
-												 selector:@selector(didEnterBackgroundCallBack:) 
-													 name:UIApplicationDidEnterBackgroundNotification 
-												   object:nil];
-		[[NSNotificationCenter defaultCenter] addObserver:self 
-												 selector:@selector(willEnterForegroundCallBack:) 
-													 name:UIApplicationWillEnterForegroundNotification 
-												   object:nil];
-		[[NSNotificationCenter defaultCenter] addObserver:self 
-												 selector:@selector(willTerminateCallBack:) 
-													 name:UIApplicationWillTerminateNotification 
-												   object:nil];
+		[self initLytics];
 	}
 	return self;
 }

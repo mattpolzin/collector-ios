@@ -47,6 +47,12 @@
 		[dict setObject:[LyticsSettings eventNameForKey:self.key] forKey:[LyticsSettings parameterNameForKey:@"EVENT_NAME_KEY"]];
 	}
 	
+	//always include the uuid if available
+	NSString* uuid = [LyticsSettings getParameterValueForGlobalKey:@"CFUUID_KEY"];
+	if (uuid) {
+		[dict setObject:uuid forKey:[LyticsSettings parameterNameForKey:@"CFUUID_KEY"]];
+	}
+	
 	if (!categoriesProcessed) {
 		[self processCategories];
 	}

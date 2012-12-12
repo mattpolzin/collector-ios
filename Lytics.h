@@ -9,7 +9,7 @@
 //
 // Please visit www.count.ly for more information.
 
-#define LYTICS_DEBUG 1
+#define LYTICS_DEBUG 0
 
 #if LYTICS_DEBUG
 #   define LYTICS_LOG(fmt, ...) NSLog(fmt, ##__VA_ARGS__)
@@ -17,7 +17,7 @@
 #   define LYTICS_LOG(...)
 #endif
 
-#define LYTICS_VERSION "1.0"
+#define LYTICS_VERSION "1.01"
 
 #import <Foundation/Foundation.h>
 
@@ -31,7 +31,16 @@
     EventQueue *eventQueue;
 	
 	time_t sessionStartTimestamp;
+	
+	NSString* uuid;
 }
+
+// The uuid (unique user id) gets sent to Lytics if it is set (by default it is
+// created and set for you if the general setting generate_or_load_CFUUID is
+// set to YES). You can also set the uuid yourself and that value will get
+// sent to Lytics. If no value is set, Lytics will not receive any information
+// that allows them to assosciate each incoming event with any other events.
+@property (nonatomic, retain) NSString* uuid;
 
 + (Lytics *)sharedInstance;
 
