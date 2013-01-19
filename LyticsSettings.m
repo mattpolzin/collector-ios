@@ -25,6 +25,8 @@ static LyticsSettings* _lyticsSettings = nil;
 // Convenience method; passes method call on to shared LyticsSettings object.
 + (id)objectForKey:(NSString*)key;
 
+- (void)mergeSettingsWithDict:(NSDictionary*)moreSettings;
+
 #if STATIC_LINKING
 - (NSDictionary*)generateStaticSettings;
 #endif
@@ -42,6 +44,15 @@ static LyticsSettings* _lyticsSettings = nil;
 {
 	[LyticsSettings loadSettings];
 	return [_lyticsSettings objectForKey:key];
+}
+
+- (void)mergeSettingsWithDict:(NSDictionary*)moreSettings
+{
+	if (settings) {
+		NSDictionary* tmp = [settings mergeMutableCopyWithDictionary:moreSettings];
+		[settings release];
+		settings = [tmp retain];
+	}
 }
 
 #if STATIC_LINKING
@@ -136,6 +147,18 @@ static LyticsSettings* _lyticsSettings = nil;
 {
 	if (_lyticsSettings == nil) {
 		_lyticsSettings = [[LyticsSettings alloc] init];
+	}
+}
+
++ (void)loadAndMergeSettings
+{
+	[LyticsSettings loadSettings];
+	
+	NSString* fpath = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"LyticsSettings.plist"];
+	NSDictionary* settingsDict = [[NSDictionary alloc] initWithContentsOfFile:fpath];
+	
+	if (settingsDict) {
+		[_lyticsSettings mergeSettingsWithDict:settingsDict];
 	}
 }
 

@@ -66,4 +66,11 @@
 // called upon.
 + (void)loadSettings;
 
+// If settings have not been loaded, this loads them. If settings have been
+// loaded, this merges the settings currently loaded with those in
+// LyticsSettings.plist. This is helpful if Lytics is used by a static library
+// you are including in your project. That static library will have its own
+// settings, but you can add yours from your plist using this function.
++ (void)loadAndMergeSettings;
+
 @end
