@@ -59,7 +59,7 @@ static ConnectionQueue *s_sharedConnectionQueue = nil;
 	
 	id dataObject = [queue_ objectAtIndex:0];
 	
-//	LYTICS_LOG(@"EVENT: %@",dataObject);
+//	LYTICS_LOGI(@"EVENT: %@",dataObject);
 	
 	NSData* requestBodyData = [dataObject JSONData];
 	
@@ -124,7 +124,7 @@ static ConnectionQueue *s_sharedConnectionQueue = nil;
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-	LYTICS_LOG(@"ok -> %@", [queue_ objectAtIndex:0]);
+	LYTICS_LOGI(@"ok -> %@", [queue_ objectAtIndex:0]);
 	
     UIApplication *app = [UIApplication sharedApplication];
     if (bgTask_ != UIBackgroundTaskInvalid)
@@ -142,8 +142,8 @@ static ConnectionQueue *s_sharedConnectionQueue = nil;
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)err
 {
-	LYTICS_LOG(@"error -> %@", [queue_ objectAtIndex:0]);
-	LYTICS_LOG(@"%@",err);
+	LYTICS_LOGI(@"error -> %@", [queue_ objectAtIndex:0]);
+	LYTICS_LOGI(@"%@",err);
 	
     UIApplication *app = [UIApplication sharedApplication];
     if (bgTask_ != UIBackgroundTaskInvalid)

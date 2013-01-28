@@ -12,9 +12,9 @@
 #define LYTICS_DEBUG 0
 
 #if LYTICS_DEBUG
-#   define LYTICS_LOG(fmt, ...) NSLog(fmt, ##__VA_ARGS__)
+#   define LYTICS_LOGI(fmt, ...) NSLog(fmt, ##__VA_ARGS__)
 #else
-#   define LYTICS_LOG(...)
+#   define LYTICS_LOGI(...)
 #endif
 
 #define LYTICS_VERSION "1.01"

@@ -159,19 +159,19 @@ static Lytics *s_sharedLytics = nil;
 
 - (void)didEnterBackgroundCallBack:(NSNotification *)notification
 {
-	LYTICS_LOG(@"Lytics didEnterBackgroundCallBack");
+	LYTICS_LOGI(@"Lytics didEnterBackgroundCallBack");
 	[self suspend];
 }
 
 - (void)willEnterForegroundCallBack:(NSNotification *)notification
 {
-	LYTICS_LOG(@"Lytics willEnterForegroundCallBack");
+	LYTICS_LOGI(@"Lytics willEnterForegroundCallBack");
 	[self resume];
 }
 
 - (void)willTerminateCallBack:(NSNotification *)notification
 {
-	LYTICS_LOG(@"Lytics willTerminateCallBack");
+	LYTICS_LOGI(@"Lytics willTerminateCallBack");
 	[self exit];
 }
 
